@@ -9,10 +9,10 @@ const client = require('../lib/client');
 describe('app routes', () => {
   describe('routes', () => {
     let token;
-  
+
     beforeAll(async () => {
       execSync('npm run setup-db');
-  
+
       await client.connect();
       const signInData = await fakeRequest(app)
         .post('/auth/signup')
@@ -20,39 +20,74 @@ describe('app routes', () => {
           email: 'jon@user.com',
           password: '1234'
         });
-      
+
       token = signInData.body.token; // eslint-disable-line
     }, 10000);
-  
+
     afterAll(done => {
       return client.end(done);
     });
 
-    test('returns animals', async() => {
+    test('creates new todo', async () => {
 
       const expectation = [
         {
-          'id': 1,
-          'name': 'bessie',
-          'cool_factor': 3,
-          'owner_id': 1
-        },
-        {
-          'id': 2,
-          'name': 'jumpy',
-          'cool_factor': 4,
-          'owner_id': 1
-        },
-        {
-          'id': 3,
-          'name': 'spot',
-          'cool_factor': 10,
-          'owner_id': 1
+          id: expect.any(Number),
+          todo: expect.any(String),
+          completed: false,
+          owner_id: expect.any(Number)
         }
       ];
 
       const data = await fakeRequest(app)
-        .get('/animals')
+        .post('/api/todos')
+        .send({
+          id: expect.any(Number),
+          todo: expect.any(String),
+          completed: false,
+          owner_id: expect.any(Number)
+        })
+        .set('Authorization', token)
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(data.body).toEqual(expectation);
+    });
+
+    test('grabs todos', async () => {
+
+      const expectation = [
+        {
+          id: expect.any(Number),
+          todo: expect.any(String),
+          completed: false,
+          owner_id: expect.any(Number)
+        }
+      ];
+
+      const data = await fakeRequest(app)
+        .get('/api/todos')
+        .set('Authorization', token)
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(data.body).toEqual(expect.arrayContaining(expectation));
+    });
+
+    test('updates a todo', async () => {
+
+      const expectation = [
+
+
+      ];
+
+      const data = await fakeRequest(app)
+        .put('/api/todos/1')
+        .send({
+          todo: expect.any(String),
+          completed: true
+        })
+        .set('Authorization', token)
         .expect('Content-Type', /json/)
         .expect(200);
 
