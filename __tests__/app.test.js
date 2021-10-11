@@ -77,14 +77,17 @@ describe('app routes', () => {
     test('updates a todo', async () => {
 
       const expectation = [
-
-
+        {
+          id: 1,
+          todo: 'read 2 chapters',
+          completed: true,
+          owner_id: 1
+        }
       ];
-
       const data = await fakeRequest(app)
         .put('/api/todos/1')
         .send({
-          todo: expect.any(String),
+          todo: 'read 2 chapters',
           completed: true
         })
         .set('Authorization', token)
